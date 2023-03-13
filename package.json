@@ -1,0 +1,19 @@
+{
+  "name": "tfg-shareme_back-end",
+  "version": "1.0.0",
+  "description": "This is my back-end using Express with MongoDB to create a full API REST for my final grade proyect.",
+  "main": "src/app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Pablo-Miguel/tfg-shareme_back-end.git"
+  },
+  "author": "Pablo-Miguel",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Pablo-Miguel/tfg-shareme_back-end/issues"
+  },
+  "homepage": "https://github.com/Pablo-Miguel/tfg-shareme_back-end#readme"
+}
