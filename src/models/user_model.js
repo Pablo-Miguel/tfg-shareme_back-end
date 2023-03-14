@@ -14,6 +14,10 @@ const userSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
+    avatar: {
+        type: String,
+        default: 'https://static.vecteezy.com/system/resources/previews/008/442/086/original/illustration-of-human-icon-user-symbol-icon-modern-design-on-blank-background-free-vector.jpg'
+    },
     email: {
         type: String,
         required: true,
