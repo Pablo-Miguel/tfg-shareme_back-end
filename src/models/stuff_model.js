@@ -16,8 +16,12 @@ const stuffSchema = new mongoose.Schema({
     },
     price: {
         type: Number,
-        required: true,
-        trim: true
+        default: 0,
+        validate(value) {
+            if (value < 0) {
+                throw new Error('Price must be a positive number');
+            }
+        }
     },
     has_offer: {
         type: Boolean,
@@ -28,7 +32,13 @@ const stuffSchema = new mongoose.Schema({
         required: function() {
             return this.has_offer;
         },
-        trim: true
+        trim: true,
+        default: 0,
+        validate(value) {
+            if (value < 0) {
+                throw new Error('Offer price must be a positive number');
+            }
+        }
     },
     shopping_link: {
         type: String,
