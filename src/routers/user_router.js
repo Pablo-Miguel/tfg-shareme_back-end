@@ -93,4 +93,21 @@ router.delete('/users/me', auth, async (req, res) => {
     }
 });
 
+//Search for a user
+router.get('/users/:id', auth, async (req, res) => {
+    const _id = req.params.id;
+
+    try {
+        const user = await User.findById(_id);
+
+        if (!user) {
+            return res.status(404).send();
+        }
+
+        res.send(user);
+    } catch (e) {
+        res.status(500).send();
+    }
+});
+
 module.exports = router;
