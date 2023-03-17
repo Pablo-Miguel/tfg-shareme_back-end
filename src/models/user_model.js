@@ -64,13 +64,13 @@ const userSchema = new mongoose.Schema({
     timestamps: true
 });
 
-userSchema.virtual('my_collections', {
+userSchema.virtual('collections', {
     ref: 'Collection',
     localField: '_id',
     foreignField: 'owner'
 });
 
-userSchema.virtual('my_stuffs', {
+userSchema.virtual('stuff', {
     ref: 'Stuff',
     localField: '_id',
     foreignField: 'owner'
