@@ -47,7 +47,7 @@ const stuffSchema = new mongoose.Schema({
     },
     views: {
         type: Number,
-        required: true,
+        default: 0,
         trim: true
     },
     likes: [{
@@ -71,12 +71,14 @@ const stuffSchema = new mongoose.Schema({
 stuffSchema.methods.toJSON = function () {
     const stuff = this;
     const stuffObject = stuff.toObject();
+    const owner = stuffObject.owner;
+    const likes = stuffObject.likes;
 
     delete stuffObject.owner;
     delete stuffObject.likes;
 
-    stuffObject.owner = `${stuffObject.owner.firstname} ${stuffObject.owner.lastname}`;
-    stuffObject.likes = stuffObject.likes.length;
+    stuffObject.owner = `${owner.firstName} ${owner.lastName}`;
+    stuffObject.likes = likes.length;
     
     return stuffObject;
 }
