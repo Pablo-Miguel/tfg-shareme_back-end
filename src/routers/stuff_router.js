@@ -71,8 +71,6 @@ router.get("/stuff", auth, async (req, res) => {
       .skip(req.query.skip ? parseInt(req.query.skip) : 0)
       .populate("owner");
 
-      console.log(match);
-
     res.send({ stuff : stuff, total: total_stuff });
   } catch (e) {
     res.status(500).send();
