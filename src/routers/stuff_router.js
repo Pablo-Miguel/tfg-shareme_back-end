@@ -3,7 +3,6 @@ const auth = require("../middleware/auth");
 const Stuff = require("../models/stuff_model");
 const router = new express.Router();
 
-//Create a 'stuff' post
 router.post("/stuff/add-new-stuff", auth, async (req, res) => {
   const stuff = new Stuff({
     ...req.body,
@@ -64,14 +63,112 @@ router.get("/stuff", auth, async (req, res) => {
   }
 
   try {
-    const total_stuff = await (await Stuff.find(match)).length;
     const stuff = await Stuff.find(match)
       .sort(sort)
       .limit(req.query.limit ? parseInt(req.query.limit) : 10)
       .skip(req.query.skip ? parseInt(req.query.skip) : 0)
       .populate("owner");
 
-    res.send({ stuff : stuff, total: total_stuff });
+    let temp_stuff = [];
+    stuff.forEach(item => {
+      temp_stuff.push({single_stuff: item, isLiked: item.likes.filter((l) => l.toString() === req.user._id.toString()).length > 0});
+    });
+
+    res.send({ stuff : temp_stuff, total: temp_stuff.length });
+  } catch (e) {
+    res.status(500).send();
+  }
+});
+
+router.get("/stuff/:id", auth, async (req, res) => {
+  const _id = req.params.id;
+
+  try {
+    const stuff = await Stuff.findOne({ _id }).populate("owner");
+
+    if (!stuff) {
+      return res.status(404).send();
+    }
+
+    res.send(stuff);
+  } catch (e) {
+    res.status(500).send();
+  }
+});
+
+router.get("/stuff/:id/like", auth, async (req, res) => {
+  try {
+    const stuff = await Stuff.findOne({
+      _id: req.params.id
+    }).populate("owner");
+
+    if (!stuff) {
+      return res.status(404).send();
+    }
+
+    if (stuff.likes.filter((l) => l.toString() === req.user._id.toString()).length === 0) {
+      stuff.likes = stuff.likes.concat(req.user._id);
+      await stuff.save();
+    }
+    
+    res.send(stuff);
+  } catch (e) {
+    res.send(400).send(e);
+  }
+});
+
+router.patch("/stuff/:id", auth, async (req, res) => {
+  const updates = Object.keys(req.body);
+  const allowedUpdates = [
+    "title",
+    "description",
+    "category",
+    "price",
+    "has_offer",
+    "offer_price",
+    "image",
+    "shopping_link",
+    "views",
+    "likes"
+  ];
+  const isValidOperation = updates.every((update) =>
+    allowedUpdates.includes(update)
+  );
+
+  if (!isValidOperation) {
+    return res.status(400).send({ error: "Invalid updates!" });
+  }
+
+  try {
+    const stuff = await Stuff.findOne({
+      _id: req.params.id,
+      owner: req.user._id,
+    }).populate("owner");
+
+    if (!stuff) {
+      return res.status(404).send();
+    }
+
+    updates.forEach((update) => (stuff[update] = req.body[update]));
+    await stuff.save();
+    res.send(stuff);
+  } catch (e) {
+    res.send(400).send(e);
+  }
+});
+
+router.delete("/stuff/:id", auth, async (req, res) => {
+  try {
+    const stuff = await Stuff.findOneAndDelete({
+      _id: req.params.id,
+      owner: req.user._id,
+    }).populate("owner");
+
+    if (!stuff) {
+      res.status(404).send();
+    }
+
+    res.send(stuff);
   } catch (e) {
     res.status(500).send();
   }
