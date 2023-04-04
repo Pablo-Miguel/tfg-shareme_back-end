@@ -117,6 +117,46 @@ router.get("/stuff/:id/like", auth, async (req, res) => {
   }
 });
 
+router.get("/stuff/:id/unlike", auth, async (req, res) => {
+  try {
+    const stuff = await Stuff.findOne({
+      _id: req.params.id
+    }).populate("owner");
+
+    if (!stuff) {
+      return res.status(404).send();
+    }
+
+    if (stuff.likes.filter((l) => l.toString() === req.user._id.toString()).length > 0) {
+      stuff.likes = stuff.likes.filter((l) => l.toString() !== req.user._id.toString());
+      await stuff.save();
+    }
+
+    res.send(stuff);
+  } catch (e) {
+    res.send(400).send(e);
+  }
+});
+
+router.get("/stuff/:id/view", auth, async (req, res) => {
+  try {
+    const stuff = await Stuff.findOne({
+      _id: req.params.id
+    }).populate("owner");
+
+    if (!stuff) {
+      return res.status(404).send();
+    }
+
+    stuff.views = stuff.views + 1;
+    await stuff.save();
+
+    res.send(stuff);
+  } catch (e) {
+    res.send(400).send(e);
+  }
+});
+
 router.patch("/stuff/:id", auth, async (req, res) => {
   const updates = Object.keys(req.body);
   const allowedUpdates = [
