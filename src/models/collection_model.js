@@ -35,11 +35,17 @@ const collectionSchema = new mongoose.Schema({
 collectionSchema.methods.toJSON = function() {
     const collection = this;
     const collectionObject = collection.toObject();
+    const owner = collectionObject.owner;
 
     delete collectionObject.owner;
     delete collectionObject.likes;
 
-    collectionObject.owner = `${collectionObject.owner.firstname} ${collectionObject.owner.lastname}`;
+    collectionObject.owner = {
+        _id: owner._id,
+        name: `${owner.firstName} ${owner.lastName}`,
+        avatar: owner.avatar
+    };
+    
     collectionObject.likes = collectionObject.likes.length;
 
     return collectionObject;
