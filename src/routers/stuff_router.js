@@ -69,12 +69,14 @@ router.get("/stuff", auth, async (req, res) => {
       .skip(req.query.skip ? parseInt(req.query.skip) : 0)
       .populate("owner");
 
-    let temp_stuff = [];
-    stuff.forEach(item => {
-      temp_stuff.push({single_stuff: item, isLiked: item.likes.filter((l) => l.toString() === req.user._id.toString()).length > 0});
+    let new_stuff = stuff.map(item => {
+      return { 
+        ...item.toJSON(),
+        isLiked: item.likes.filter((l) => l.toString() === req.user._id.toString()).length > 0 
+      };
     });
 
-    res.send({ stuff : temp_stuff, total: temp_stuff.length });
+    res.send({ stuff : new_stuff, total: new_stuff.length });
   } catch (e) {
     res.status(500).send();
   }
@@ -84,13 +86,34 @@ router.get("/stuff/:id", auth, async (req, res) => {
   const _id = req.params.id;
 
   try {
-    const stuff = await Stuff.findOne({ _id }).populate("owner");
+    const stuff = await Stuff.findOne({ _id })
+      .populate("owner")
+      .populate("ratingMessages")
+      .populate({ path: "ratingMessages", populate: { path: "from" } })
+      .populate("questionAnswersMessages")
+      .populate({ path: "questionAnswersMessages", populate: { path: "from" } })
+      .populate({ path: "questionAnswersMessages", populate: { path: "answers"} })
+      .populate({ path: "questionAnswersMessages", populate: { path: "answers", populate: "from" } });
+
 
     if (!stuff) {
       return res.status(404).send();
     }
 
-    res.send(stuff);
+    const isMine = stuff.owner._id.toString() === req.user._id.toString();
+
+    const ratingMessages = stuff.ratingMessages.map(rating => rating.toJSON());
+
+    const questionAnswersMessages = stuff.questionAnswersMessages.map(question => ({
+      ...question.toJSON(),
+      answers: question.answers.map(answer => answer.toJSON())
+    }));
+
+    res.send({ stuff: {
+      ...stuff.toJSON(),
+      ratingMessages,
+      questionAnswersMessages
+    } , isLiked: isMine ? true : stuff.likes.filter((l) => l.toString() === req.user._id.toString()).length > 0});
   } catch (e) {
     res.status(500).send();
   }
