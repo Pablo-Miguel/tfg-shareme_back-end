@@ -68,6 +68,18 @@ const stuffSchema = new mongoose.Schema({
     timestamps: true
 });
 
+stuffSchema.virtual('ratingMessages', {
+    ref: 'RatingMessage',
+    localField: '_id',
+    foreignField: 'stuff'
+});
+
+stuffSchema.virtual('questionAnswersMessages', {
+    ref: 'QuestionAnswersMessage',
+    localField: '_id',
+    foreignField: 'stuff'
+});
+
 stuffSchema.methods.toJSON = function () {
     const stuff = this;
     const stuffObject = stuff.toObject();
@@ -77,7 +89,11 @@ stuffSchema.methods.toJSON = function () {
     delete stuffObject.owner;
     delete stuffObject.likes;
 
-    stuffObject.owner = `${owner.firstName} ${owner.lastName}`;
+    stuffObject.owner = {
+        _id: owner._id,
+        name: `${owner.firstName} ${owner.lastName}`,
+        avatar: owner.avatar
+    };
     stuffObject.likes = likes.length;
     
     return stuffObject;
