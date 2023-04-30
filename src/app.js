@@ -3,9 +3,9 @@ const cors = require('cors');
 require('./db/mongoose');
 const user_router = require('./routers/user_router');
 const stuff_router = require('./routers/stuff_router');
-const Stuff = require('./models/stuff_model');
+const message_router = require('./routers/messages_router');
 const Collection = require('./models/collection_model');
-const Message = require('./models/message_model');
+const Answer = require('./models/answer_model');
 
 const app = express();
 
@@ -19,6 +19,7 @@ app.use(express.json());
 //Define express routers middlewares
 app.use(user_router);
 app.use(stuff_router);
+app.use(message_router);
 
 //Start express server
 app.listen(port, () => {
