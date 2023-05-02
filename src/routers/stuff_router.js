@@ -87,13 +87,20 @@ router.get("/stuff/:id", auth, async (req, res) => {
 
   try {
     const stuff = await Stuff.findOne({ _id })
-      .populate("owner")
-      .populate("ratingComments")
-      .populate({ path: "ratingComments", populate: { path: "from" } })
-      .populate("questionAnswersComments")
-      .populate({ path: "questionAnswersComments", populate: { path: "from" } })
-      .populate({ path: "questionAnswersComments", populate: { path: "answers"} })
-      .populate({ path: "questionAnswersComments", populate: { path: "answers", populate: "from" } });
+    .populate("owner")
+    .populate({
+      path: "ratingComments",
+      populate: { path: "from" },
+      options: { sort: { "createdAt": -1 } }
+    })
+    .populate({
+      path: "questionAnswersComments",
+      populate: [
+        { path: "from" },
+        { path: "answers", populate: "from", options: { sort: { "createdAt": -1 } } }
+      ],
+      options: { sort: { "createdAt": -1 } }
+    });
 
     if (!stuff) {
       return res.status(404).send();
