@@ -16,6 +16,8 @@ const answerSchema = new mongoose.Schema({
         ref: 'QuestionAnswersMessage',
         required: true
     }
+}, {
+    timestamps: true
 });
 
 answerSchema.methods.toJSON = function() {
