@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const questionAnswersMessageSchema = new mongoose.Schema({
+const questionAnswersCommentSchema = new mongoose.Schema({
     from: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
@@ -20,28 +20,28 @@ const questionAnswersMessageSchema = new mongoose.Schema({
     timestamps: true
 });
 
-questionAnswersMessageSchema.virtual('answers', {
+questionAnswersCommentSchema.virtual('answers', {
     ref: 'Answer',
     localField: '_id',
     foreignField: 'question'
 });
 
-questionAnswersMessageSchema.methods.toJSON = function() {
-    const message = this;
-    const messageObject = message.toObject();
-    const from = messageObject.from;
+questionAnswersCommentSchema.methods.toJSON = function() {
+    const comment = this;
+    const commentObject = comment.toObject();
+    const from = commentObject.from;
 
-    delete messageObject.from;
+    delete commentObject.from;
 
-    messageObject.from = {
+    commentObject.from = {
         id: from._id,
         name: `${from.firstName} ${from.lastName}`,
         avatar: from.avatar
     };
 
-    return messageObject;
+    return commentObject;
 }
 
-const questionAnswersMessage = mongoose.model('QuestionAnswersMessage', questionAnswersMessageSchema);
+const questionAnswersComment = mongoose.model('QuestionAnswersComment', questionAnswersCommentSchema);
 
-module.exports = questionAnswersMessage;
+module.exports = questionAnswersComment;

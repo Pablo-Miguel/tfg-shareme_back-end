@@ -68,14 +68,14 @@ const stuffSchema = new mongoose.Schema({
     timestamps: true
 });
 
-stuffSchema.virtual('ratingMessages', {
-    ref: 'RatingMessage',
+stuffSchema.virtual('ratingComments', {
+    ref: 'RatingComment',
     localField: '_id',
     foreignField: 'stuff'
 });
 
-stuffSchema.virtual('questionAnswersMessages', {
-    ref: 'QuestionAnswersMessage',
+stuffSchema.virtual('questionAnswersComments', {
+    ref: 'QuestionAnswersComment',
     localField: '_id',
     foreignField: 'stuff'
 });

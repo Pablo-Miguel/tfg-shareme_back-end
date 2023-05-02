@@ -88,13 +88,12 @@ router.get("/stuff/:id", auth, async (req, res) => {
   try {
     const stuff = await Stuff.findOne({ _id })
       .populate("owner")
-      .populate("ratingMessages")
-      .populate({ path: "ratingMessages", populate: { path: "from" } })
-      .populate("questionAnswersMessages")
-      .populate({ path: "questionAnswersMessages", populate: { path: "from" } })
-      .populate({ path: "questionAnswersMessages", populate: { path: "answers"} })
-      .populate({ path: "questionAnswersMessages", populate: { path: "answers", populate: "from" } });
-
+      .populate("ratingComments")
+      .populate({ path: "ratingComments", populate: { path: "from" } })
+      .populate("questionAnswersComments")
+      .populate({ path: "questionAnswersComments", populate: { path: "from" } })
+      .populate({ path: "questionAnswersComments", populate: { path: "answers"} })
+      .populate({ path: "questionAnswersComments", populate: { path: "answers", populate: "from" } });
 
     if (!stuff) {
       return res.status(404).send();
@@ -102,17 +101,17 @@ router.get("/stuff/:id", auth, async (req, res) => {
 
     const isMine = stuff.owner._id.toString() === req.user._id.toString();
 
-    const ratingMessages = stuff.ratingMessages.map(rating => rating.toJSON());
+    const ratingComments = stuff.ratingComments.map(rating => rating.toJSON());
 
-    const questionAnswersMessages = stuff.questionAnswersMessages.map(question => ({
+    const questionAnswersComments = stuff.questionAnswersComments.map(question => ({
       ...question.toJSON(),
       answers: question.answers.map(answer => answer.toJSON())
     }));
 
     res.send({ stuff: {
       ...stuff.toJSON(),
-      ratingMessages,
-      questionAnswersMessages
+      ratingComments,
+      questionAnswersComments
     } , isLiked: isMine ? true : stuff.likes.filter((l) => l.toString() === req.user._id.toString()).length > 0});
   } catch (e) {
     res.status(500).send();

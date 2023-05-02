@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const ratingMessageSchema = new mongoose.Schema({
+const ratingCommentSchema = new mongoose.Schema({
     from: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
@@ -31,22 +31,22 @@ const ratingMessageSchema = new mongoose.Schema({
     timestamps: true
 });
 
-ratingMessageSchema.methods.toJSON = function() {
-    const message = this;
-    const messageObject = message.toObject();
-    const from = messageObject.from;
+ratingCommentSchema.methods.toJSON = function() {
+    const comment = this;
+    const commentObject = comment.toObject();
+    const from = commentObject.from;
 
-    delete messageObject.from;
+    delete commentObject.from;
 
-    messageObject.from = {
+    commentObject.from = {
         id: from._id,
         name: `${from.firstName} ${from.lastName}`,
         avatar: from.avatar
     };
 
-    return messageObject;
+    return commentObject;
 }
 
-const ratingMessage = mongoose.model('RatingMessage', ratingMessageSchema);
+const ratingComment = mongoose.model('RatingComment', ratingCommentSchema);
 
-module.exports = ratingMessage;
+module.exports = ratingComment;
