@@ -63,6 +63,9 @@ router.get("/stuff", auth, async (req, res) => {
   }
 
   try {
+    const all_stuff = await Stuff.find(match)
+      .sort(sort)
+      .populate("owner");
     const stuff = await Stuff.find(match)
       .sort(sort)
       .limit(req.query.limit ? parseInt(req.query.limit) : 10)
@@ -75,8 +78,8 @@ router.get("/stuff", auth, async (req, res) => {
         isLiked: item.likes.filter((l) => l.toString() === req.user._id.toString()).length > 0 
       };
     });
-
-    res.send({ stuff : new_stuff, total: new_stuff.length });
+    
+    res.send({ stuff : new_stuff, total: all_stuff.length });
   } catch (e) {
     res.status(500).send();
   }
