@@ -63,9 +63,7 @@ router.get("/stuff", auth, async (req, res) => {
   }
 
   try {
-    const all_stuff = await Stuff.find(match)
-      .sort(sort)
-      .populate("owner");
+    const all_stuff = await Stuff.find(match);
     const stuff = await Stuff.find(match)
       .sort(sort)
       .limit(req.query.limit ? parseInt(req.query.limit) : 10)
@@ -138,6 +136,10 @@ router.get("/stuff/:id/like", auth, async (req, res) => {
       return res.status(404).send();
     }
 
+    if(stuff.likes.includes(req.user._id)) {
+      return res.status(400).send({ error: "Already liked stuff!" });
+    }
+
     if (stuff.likes.filter((l) => l.toString() === req.user._id.toString()).length === 0) {
       stuff.likes = stuff.likes.concat(req.user._id);
       await stuff.save();
@@ -157,6 +159,10 @@ router.get("/stuff/:id/unlike", auth, async (req, res) => {
 
     if (!stuff) {
       return res.status(404).send();
+    }
+
+    if(!stuff.likes.includes(req.user._id)) {
+      return res.status(400).send({ error: "Already unliked stuff!" });
     }
 
     if (stuff.likes.filter((l) => l.toString() === req.user._id.toString()).length > 0) {
