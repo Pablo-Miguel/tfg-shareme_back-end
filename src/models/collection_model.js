@@ -10,13 +10,13 @@ const collectionSchema = new mongoose.Schema({
         type: String,
         default: 'This collection has no description'
     },
-    stuffs: [{
+    stuff: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Stuff'
     }],
     views: {
         type: Number,
-        required: true,
+        default: 0,
         trim: true
     },
     likes: [{
@@ -36,7 +36,8 @@ collectionSchema.methods.toJSON = function() {
     const collection = this;
     const collectionObject = collection.toObject();
     const owner = collectionObject.owner;
-
+    const likes = collectionObject.likes;
+    
     delete collectionObject.owner;
     delete collectionObject.likes;
 
@@ -46,7 +47,7 @@ collectionSchema.methods.toJSON = function() {
         avatar: owner.avatar
     };
     
-    collectionObject.likes = collectionObject.likes.length;
+    collectionObject.likes = likes.length;
 
     return collectionObject;
 }
