@@ -104,7 +104,36 @@ router.get('/users/:id', auth, async (req, res) => {
             return res.status(404).send();
         }
 
-        res.send(user);
+        res.send({
+            ...user.toJSON(),
+            isFollowing: !req.user._id.equals(_id) ? req.user.following.includes(_id) : true
+        });
+
+    } catch (e) {
+        res.status(500).send();
+    }
+});
+
+//Follow a user
+router.get('/users/:id/follow', auth, async (req, res) => {
+    const _id = req.params.id;
+
+    try {
+
+        if(!req.user._id.equals(_id)) {
+            req.user.following.push(_id);
+            await req.user.save();
+
+            const followedUser = await User.findById(_id);
+            followedUser.followers.push(req.user._id);
+            await followedUser.save();
+        }
+
+        res.send({
+            ...req.user.toJSON(),
+            isFollowing: !req.user._id.equals(_id) ? req.user.following.includes(_id) : true
+        });
+
     } catch (e) {
         res.status(500).send();
     }
