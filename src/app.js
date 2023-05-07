@@ -4,7 +4,7 @@ require('./db/mongoose');
 const user_router = require('./routers/user_router');
 const stuff_router = require('./routers/stuff_router');
 const comment_router = require('./routers/comment_router');
-const Collection = require('./models/collection_model');
+const collection_router = require('./routers/collection_router');
 const Answer = require('./models/answer_model');
 
 const app = express();
@@ -19,6 +19,7 @@ app.use(express.json());
 //Define express routers middlewares
 app.use(user_router);
 app.use(stuff_router);
+app.use(collection_router);
 app.use(comment_router);
 
 //Start express server
