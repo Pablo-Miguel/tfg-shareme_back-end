@@ -139,4 +139,128 @@ router.get('/users/:id/follow', auth, async (req, res) => {
     }
 });
 
+//Unfollow a user
+router.get('/users/:id/unfollow', auth, async (req, res) => {
+    const _id = req.params.id;
+
+    try {
+
+        if(!req.user._id.equals(_id)) {
+            req.user.following = req.user.following.filter((id) => {
+                return !id.equals(_id);
+            });
+            await req.user.save();
+        
+            const followedUser = await User.findById(_id);
+            followedUser.followers = followedUser.followers.filter((id) => {
+                return !id.equals(req.user._id);
+            });
+            await followedUser.save();
+
+        }
+
+        res.send({
+            ...req.user.toJSON(),
+            isFollowing: !req.user._id.equals(_id) ? req.user.following.includes(_id) : true
+        });
+
+    } catch (e) {
+        res.status(500).send();
+    }
+});
+
+//Get all followers
+router.get('/users/:id/followers', auth, async (req, res) => {
+    const _id = req.params.id;
+    
+    try {
+
+        const user = await User.findById(_id).populate('followers');
+        
+        if (!user) {
+            return res.status(404).send();
+        }
+        
+        const followers = user.followers.map((follower) => {
+            return {
+                ...follower.toJSON(),
+                isFollowing: !req.user._id.equals(follower._id) ? req.user.following.includes(follower._id) : true
+            };
+        });
+
+        res.send(followers);
+        
+    } catch (e) {
+        res.status(500).send();
+    }
+});
+
+//Get all following
+router.get('/users/:id/following', auth, async (req, res) => {
+    const _id = req.params.id;
+
+    try {
+
+        const user = await User.findById(_id).populate('following');
+
+        if (!user) {
+            return res.status(404).send();
+        }
+
+        const following = user.following.map((followedUser) => {
+            return {
+                ...followedUser.toJSON(),
+                isFollowing: !req.user._id.equals(followedUser._id) ? req.user.following.includes(followedUser._id) : true
+            };
+        });
+
+        res.send(following);
+
+    } catch (e) {
+        res.status(500).send();
+    }
+});
+
+// Get users
+router.get('/users', auth, async (req, res) => {
+    const match = {};
+    const sort = {};
+
+    if(req.query.nickName) {
+        match.nickName = req.query.nickName;
+    }
+
+    if(req.query.firstName) {
+        match.firstName = req.query.firstName;
+    }
+
+    if(req.query.lastName) {
+        match.lastName = req.query.lastName;
+    }
+
+    if(req.query.name) {
+        match.name = req.query.name;
+    }
+
+    if(req.query.email) {
+        match.email = req.query.email;
+    }
+
+    if(req.query.sortBy) {
+        const parts = req.query.sortBy.split(':');
+        sort[parts[0]] = parts[1] === 'asc' ? 1 : -1;
+    }
+
+    try {
+        const users = await User.find(match).sort(sort);
+
+        res.send(users);
+    } catch (e) {
+        res.status(500).send();
+    }
+
+});
+
+
+
 module.exports = router;
