@@ -14,11 +14,6 @@ const collectionSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Stuff'
     }],
-    views: {
-        type: Number,
-        default: 0,
-        trim: true
-    },
     likes: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
@@ -27,6 +22,7 @@ const collectionSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
+        
     }
 }, {
     timestamps: true
@@ -43,7 +39,8 @@ collectionSchema.methods.toJSON = function() {
 
     collectionObject.owner = {
         _id: owner._id,
-        name: `${owner.firstName} ${owner.lastName}`,
+        name: owner.name,
+        nickName: owner.nickName,
         avatar: owner.avatar
     };
     
