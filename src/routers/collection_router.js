@@ -84,7 +84,8 @@ router.get("/collections", auth, async (req, res) => {
                 stuff: [
                     ...collection.stuff.map((stuff) => {
                         return {
-                            ...stuff.toJSON()
+                            ...stuff.toJSON(),
+                            isLiked: stuff.owner._id.toString() !== req.user._id.toString() ? stuff.likes.includes(req.user._id) : true
                         };
                     })
                 ]
@@ -119,7 +120,8 @@ router.get("/collections/:id", auth, async (req, res) => {
             stuff: [
                 ...collection.stuff.map((stuff) => {
                     return {
-                        ...stuff.toJSON()
+                        ...stuff.toJSON(),
+                        isLiked: stuff.owner._id.toString() !== req.user._id.toString() ? stuff.likes.includes(req.user._id) : true
                     };
                 })
             ]
