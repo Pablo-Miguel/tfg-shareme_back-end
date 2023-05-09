@@ -91,7 +91,8 @@ stuffSchema.methods.toJSON = function () {
 
     stuffObject.owner = {
         _id: owner._id,
-        name: `${owner.firstName} ${owner.lastName}`,
+        name: owner.name,
+        nickName: owner.nickName,
         avatar: owner.avatar
     };
     stuffObject.likes = likes.length;

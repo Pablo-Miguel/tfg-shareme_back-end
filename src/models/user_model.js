@@ -4,6 +4,12 @@ const jwt = require('jsonwebtoken');
 const validator = require('validator');
 
 const userSchema = new mongoose.Schema({
+    nickName: {
+        type: String,
+        required: true,
+        trim: true,
+        unique: true
+    },
     firstName: {
         type: String,
         required: true,
@@ -12,6 +18,10 @@ const userSchema = new mongoose.Schema({
     lastName: {
         type: String,
         required: true,
+        trim: true
+    },
+    name: {
+        type: String,
         trim: true
     },
     avatar: {
@@ -77,8 +87,7 @@ userSchema.methods.toJSON = function () {
     const userObject = user.toObject();
     
     delete userObject.password;
-    delete userObject.tokens; 
-    delete userObject.messages;
+    delete userObject.tokens;
     delete userObject.followers;
     delete userObject.following;
 
@@ -116,6 +125,10 @@ userSchema.statics.findByCredentials = async (email, password) => {
 
 userSchema.pre('save', async function (next) {
     const user = this;
+
+    if (user.firstName && user.lastName) {
+        user.name = `${user.firstName} ${user.lastName}`;
+    }
 
     if(user.isModified('password')) {
         user.password = await bcrypt.hash(user.password, 8);

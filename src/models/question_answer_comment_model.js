@@ -35,7 +35,8 @@ questionAnswersCommentSchema.methods.toJSON = function() {
 
     commentObject.from = {
         id: from._id,
-        name: `${from.firstName} ${from.lastName}`,
+        name: from.name,
+        nickName: from.nickName,
         avatar: from.avatar
     };
 
