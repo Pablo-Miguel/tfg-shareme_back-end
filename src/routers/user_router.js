@@ -1,6 +1,10 @@
 const express = require('express');
 const User = require('../models/user_model');
 const auth = require('../middleware/auth');
+const fs = require('fs');
+const mime = require('mime-types');
+// const sharp = require('sharp');
+const { upload } = require('../../controllers/upload');
 const router = new express.Router();
 
 //Create a post to signup a new user
@@ -226,6 +230,14 @@ router.get('/users', auth, async (req, res) => {
     const match = {};
     const sort = {};
 
+    if (req.query.profileNameOrNickName && req.query.profileNameOrNickName !== '') {
+        const regex = new RegExp(req.query.profileNameOrNickName, 'i');
+        match.$or = [
+          { name: { $regex: regex } },
+          { nickName: { $regex: regex } },
+        ];
+      }
+
     if(req.query.nickName) {
         match.nickName = req.query.nickName;
     }
@@ -246,21 +258,76 @@ router.get('/users', auth, async (req, res) => {
         match.email = req.query.email;
     }
 
+    if(req.query.me) {
+        match._id = req.user._id;
+    } else {
+        match._id = { $ne: req.user._id };
+    }
+
     if(req.query.sortBy) {
         const parts = req.query.sortBy.split(':');
         sort[parts[0]] = parts[1] === 'asc' ? 1 : -1;
     }
 
     try {
-        const users = await User.find(match).sort(sort);
+        const all_users = await User.find(match);
+        const users = await User.find(match)
+            .sort(sort)
+            .limit(req.query.limit ? parseInt(req.query.limit) : 10)
+            .skip(req.query.skip ? parseInt(req.query.skip) : 0);
 
-        res.send(users);
+        res.send({
+            users: users,
+            total: all_users.length 
+        });
     } catch (e) {
         res.status(500).send();
     }
 
 });
 
+//Change user's profile picture
+router.post('/users/me/avatar', auth, upload, async (req, res) => {
+    const path = req.file.path.replace(/\\/g, '/');
+    req.user.avatar = path;
+    await req.user.save();
 
+    res.send('Image uploaded successfully!');
+}, (error, req, res, next) => {
+    res.status(400).send({ error: error.message });
+});
+
+// Get user's imgs
+router.get('/assets/:nickName-:id/imgs/:imageName', async (req, res) => {
+    const _id = req.params.id;
+    const nickName = req.params.nickName;
+    const imageName = req.params.imageName;
+
+    try {
+
+        const imagePath = `./assets/${nickName}-${_id}/imgs/${imageName}`;
+
+        if(fs.existsSync(imagePath)) {
+            
+            // JUST IN CASE WE WANT TO RESIZE THE IMAGE
+            // const image = sharp(imagePath);
+            // const resizedImage = image.resize(200, 200);
+            // const mimeType = mime.lookup(imagePath);
+            // res.setHeader('Content-Type', mimeType);
+            // resizedImage.pipe(res);
+
+            const file = fs.createReadStream(imagePath);
+            const mimeType = mime.lookup(imagePath);
+            res.setHeader('Content-Type', mimeType);
+            file.pipe(res);
+
+        } else {
+            res.status(404).send();
+        }
+
+    } catch (e) {
+        res.status(500).send();
+    }
+});
 
 module.exports = router;
