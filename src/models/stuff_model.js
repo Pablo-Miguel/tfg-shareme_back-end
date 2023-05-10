@@ -12,7 +12,7 @@ const stuffSchema = new mongoose.Schema({
     },
     image: {
         type: String,
-        default: 'https://www.freeiconspng.com/uploads/no-image-icon-6.png'
+        default: 'assets/Universal-0/imgs/no-image-icon.png'
     },
     price: {
         type: Number,
@@ -88,6 +88,8 @@ stuffSchema.methods.toJSON = function () {
 
     delete stuffObject.owner;
     delete stuffObject.likes;
+
+    stuffObject.image = `${process.env.BACKEND_URL}${stuffObject.image}`;
 
     stuffObject.owner = {
         _id: owner._id,

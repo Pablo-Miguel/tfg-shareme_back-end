@@ -26,7 +26,7 @@ const userSchema = new mongoose.Schema({
     },
     avatar: {
         type: String,
-        default: 'https://static.vecteezy.com/system/resources/previews/008/442/086/original/illustration-of-human-icon-user-symbol-icon-modern-design-on-blank-background-free-vector.jpg'
+        default: 'assets/Universal-0/imgs/no-avatar-icon.jpg'
     },
     email: {
         type: String,
@@ -93,6 +93,7 @@ userSchema.methods.toJSON = function () {
 
     userObject.followers = user.followers.length;
     userObject.following = user.following.length;
+    userObject.avatar = `${process.env.BACKEND_URL}${userObject.avatar}`;
 
     return userObject;
 };
