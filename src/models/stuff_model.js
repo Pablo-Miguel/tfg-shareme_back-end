@@ -95,7 +95,7 @@ stuffSchema.methods.toJSON = function () {
         _id: owner._id,
         name: owner.name,
         nickName: owner.nickName,
-        avatar: owner.avatar
+        avatar: `${process.env.BACKEND_URL}${owner.avatar}`
     };
     stuffObject.likes = likes.length;
     

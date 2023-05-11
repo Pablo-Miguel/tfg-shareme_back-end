@@ -31,7 +31,7 @@ answerSchema.methods.toJSON = function() {
         id: from._id,
         name: from.name,
         nickName: from.nickName,
-        avatar: from.avatar
+        avatar: `${process.env.BACKEND_URL}${from.avatar}`
     };
 
     return answerObject;
