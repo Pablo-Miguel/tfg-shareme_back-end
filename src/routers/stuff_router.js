@@ -1,6 +1,7 @@
 const express = require("express");
 const auth = require("../middleware/auth");
 const Stuff = require("../models/stuff_model");
+const { upload } = require("../../controllers/upload");
 const router = new express.Router();
 
 router.post("/stuff/add-new-stuff", auth, async (req, res) => {
@@ -250,6 +251,29 @@ router.delete("/stuff/:id", auth, async (req, res) => {
   } catch (e) {
     res.status(500).send();
   }
+});
+
+router.post("/stuff/:id/image", auth, upload, async (req, res) => {
+  try {
+    const stuff = await Stuff.findOne({
+      _id: req.params.id,
+      owner: req.user._id,
+    }).populate("owner");
+
+    if (!stuff) {
+      return res.status(404).send();
+    }
+
+    const path = req.file.path.replace(/\\/g, '/');
+    stuff.image = path;
+    await stuff.save();
+
+    res.send(stuff);
+  } catch (e) {
+    res.status(500).send();
+  }
+}, (error, req, res, next) => {
+  res.status(400).send({ error: error.message });
 });
 
 module.exports = router;
