@@ -30,4 +30,4 @@ const upload = multer({
     }
 });
 
-exports.upload = upload.single('avatar');
+exports.upload = upload.single('image');
