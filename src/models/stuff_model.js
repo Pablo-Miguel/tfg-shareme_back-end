@@ -37,6 +37,8 @@ const stuffSchema = new mongoose.Schema({
         validate(value) {
             if (value < 0) {
                 throw new Error('Offer price must be a positive number');
+            } else if(value >= this.price) {
+                throw new Error('Offer price must be less than the price');
             }
         }
     },
