@@ -10,10 +10,18 @@ const collectionSchema = new mongoose.Schema({
         type: String,
         default: 'This collection has no description'
     },
-    stuff: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Stuff'
-    }],
+    stuff: {
+        type: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Stuff'
+        }],
+        validate: {
+            validator: function (stuff) {
+                return stuff.length >= 1;
+            },
+            message: 'At least one stuff item is required'
+        }
+    },
     likes: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
@@ -22,7 +30,6 @@ const collectionSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
-        
     }
 }, {
     timestamps: true
