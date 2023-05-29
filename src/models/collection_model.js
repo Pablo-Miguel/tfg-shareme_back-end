@@ -22,6 +22,10 @@ const collectionSchema = new mongoose.Schema({
             message: 'At least one stuff item is required'
         }
     },
+    views: {
+        type: Number,
+        default: 0
+    },
     likes: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
