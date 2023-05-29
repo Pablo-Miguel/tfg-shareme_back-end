@@ -88,7 +88,8 @@ router.get("/collections", auth, async (req, res) => {
                             isLiked: stuff.owner._id.toString() !== req.user._id.toString() ? stuff.likes.includes(req.user._id) : true
                         };
                     })
-                ]
+                ],
+                isLiked: collection.owner._id.toString() !== req.user._id.toString() ? collection.likes.includes(req.user._id) : true
             };
         });
 
@@ -124,7 +125,8 @@ router.get("/collections/:id", auth, async (req, res) => {
                         isLiked: stuff.owner._id.toString() !== req.user._id.toString() ? stuff.likes.includes(req.user._id) : true
                     };
                 })
-            ]
+            ],
+            isLiked: collection.owner._id.toString() !== req.user._id.toString() ? collection.likes.includes(req.user._id) : true
         };
 
         res.send(toJSONCollection);
@@ -317,7 +319,7 @@ router.delete("/collections/:id/stuff", auth, async (req, res) => {
 });
 
 //Add a view to a collection
-router.post("/collections/:id/views", async (req, res) => {
+router.post("/collections/:id/view", async (req, res) => {
     try {
         const collection = await Collection.findById(req.params.id);
 
@@ -335,7 +337,7 @@ router.post("/collections/:id/views", async (req, res) => {
 });
 
 //Add a like to a collection
-router.post("/collections/:id/likes", auth, async (req, res) => {
+router.post("/collections/:id/like", auth, async (req, res) => {
     try {
         const collection = await Collection.findById(req.params.id);
 
@@ -357,7 +359,7 @@ router.post("/collections/:id/likes", auth, async (req, res) => {
 });
 
 //Remove a like from a collection
-router.delete("/collections/:id/likes", auth, async (req, res) => {
+router.delete("/collections/:id/unlike", auth, async (req, res) => {
     try {
         const collection = await Collection.findById(req.params.id);
 
