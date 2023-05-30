@@ -64,6 +64,14 @@ const userSchema = new mongoose.Schema({
             type: String,
             required: true
         }
+    }],
+    likedStuff: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Stuff'
+    }],
+    likedCollections: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Collection'
     }]
 }, 
 {
@@ -90,6 +98,8 @@ userSchema.methods.toJSON = function () {
     delete userObject.tokens;
     delete userObject.followers;
     delete userObject.following;
+    delete userObject.likedStuff;
+    delete userObject.likedCollections;
 
     userObject.followers = user.followers.length;
     userObject.following = user.following.length;
