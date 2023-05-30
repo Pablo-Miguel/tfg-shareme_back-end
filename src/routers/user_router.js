@@ -123,18 +123,18 @@ router.get('/users/:id/follow', auth, async (req, res) => {
     const _id = req.params.id;
 
     try {
+        const followedUser = await User.findById(_id);
 
         if(!req.user._id.equals(_id)) {
             req.user.following.push(_id);
             await req.user.save();
 
-            const followedUser = await User.findById(_id);
             followedUser.followers.push(req.user._id);
             await followedUser.save();
         }
 
         res.send({
-            ...req.user.toJSON(),
+            ...followedUser.toJSON(),
             isFollowing: !req.user._id.equals(_id) ? req.user.following.includes(_id) : true
         });
 
@@ -148,6 +148,7 @@ router.get('/users/:id/unfollow', auth, async (req, res) => {
     const _id = req.params.id;
 
     try {
+        const followedUser = await User.findById(_id);
 
         if(!req.user._id.equals(_id)) {
             req.user.following = req.user.following.filter((id) => {
@@ -155,7 +156,6 @@ router.get('/users/:id/unfollow', auth, async (req, res) => {
             });
             await req.user.save();
         
-            const followedUser = await User.findById(_id);
             followedUser.followers = followedUser.followers.filter((id) => {
                 return !id.equals(req.user._id);
             });
@@ -164,7 +164,7 @@ router.get('/users/:id/unfollow', auth, async (req, res) => {
         }
 
         res.send({
-            ...req.user.toJSON(),
+            ...followedUser.toJSON(),
             isFollowing: !req.user._id.equals(_id) ? req.user.following.includes(_id) : true
         });
 
@@ -328,6 +328,82 @@ router.get('/assets/:nickName-:id/imgs/:imageName', async (req, res) => {
     } catch (e) {
         res.status(500).send();
     }
+});
+
+router.get('/users/me/likedStuff', auth, async (req, res) => {
+    const limit = req.query.limit ? parseInt(req.query.limit) : 10;
+    const skip = req.query.skip ? parseInt(req.query.skip) : 0;
+
+    try {
+        const user = await User.findById(req.user._id)
+            .populate({
+                path: 'likedStuff',
+                options: {
+                    limit: limit,
+                    skip: skip
+                },
+                populate: [
+                    { path: 'owner' }
+                ]
+            });
+        
+        const likedStuffToJSON = {
+            stuff: user.likedStuff.map((stuff) => {
+                return {
+                    ...stuff.toJSON(),
+                    isLiked: req.user.likedStuff.includes(stuff._id)
+                };
+            }),
+            total: req.user.likedStuff.length
+        };
+        
+        res.send(likedStuffToJSON);
+    } catch (e) {
+        res.status(500).send();
+    }
+
+});
+
+router.get('/users/me/likedCollections', auth, async (req, res) => {
+
+    const limit = req.query.limit ? parseInt(req.query.limit) : 10;
+    const skip = req.query.skip ? parseInt(req.query.skip) : 0;
+
+    try {
+        const user = await User.findById(req.user._id)
+            .populate({
+                path: 'likedCollections',
+                options: {
+                    limit: limit,
+                    skip: skip
+                },
+                populate: [
+                    { path: 'owner' },
+                    { path: 'stuff'}
+                ]
+            });
+        
+        const likedCollectionsToJSON = {
+            collections: user.likedCollections.map((collection) => {
+                return {
+                    ...collection.toJSON(),
+                    isLiked: req.user.likedCollections.includes(collection._id),
+                    stuff: collection.stuff.map((stuff) => {
+                        return {
+                            ...stuff.toJSON(),
+                            isLiked: req.user.likedStuff.includes(stuff._id)
+                        };
+                    })
+                };
+            }),
+            total: req.user.likedCollections.length
+        };
+        
+        res.send(likedCollectionsToJSON);
+    } catch (e) {
+        res.status(500).send();
+    }
+
 });
 
 module.exports = router;

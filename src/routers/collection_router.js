@@ -351,6 +351,9 @@ router.post("/collections/:id/like", auth, async (req, res) => {
 
         collection.likes = collection.likes.concat(req.user._id);
         await collection.save();
+
+        req.user.likedCollections.unshift(collection._id);
+        await req.user.save();
         
         res.send(collection);
     } catch (e) {
@@ -376,6 +379,12 @@ router.delete("/collections/:id/unlike", auth, async (req, res) => {
         });
 
         await collection.save();
+
+        req.user.likedCollections = req.user.likedCollections.filter((collectionId) => {
+            return collectionId.toString() !== collection._id.toString();
+        });
+
+        await req.user.save();
 
         res.send(collection);
     } catch (e) {

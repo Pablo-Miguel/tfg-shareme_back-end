@@ -144,6 +144,9 @@ router.get("/stuff/:id/like", auth, async (req, res) => {
     if (stuff.likes.filter((l) => l.toString() === req.user._id.toString()).length === 0) {
       stuff.likes = stuff.likes.concat(req.user._id);
       await stuff.save();
+
+      req.user.likedStuff.unshift(stuff._id);
+      await req.user.save();
     }
     
     res.send(stuff);
@@ -169,6 +172,9 @@ router.get("/stuff/:id/unlike", auth, async (req, res) => {
     if (stuff.likes.filter((l) => l.toString() === req.user._id.toString()).length > 0) {
       stuff.likes = stuff.likes.filter((l) => l.toString() !== req.user._id.toString());
       await stuff.save();
+
+      req.user.likedStuff = req.user.likedStuff.filter((l) => l.toString() !== stuff._id.toString());
+      await req.user.save();
     }
 
     res.send(stuff);
