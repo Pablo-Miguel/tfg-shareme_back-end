@@ -69,7 +69,7 @@ router.get('/users/me', auth, async (req, res) => {
 //Create a patch to update a user
 router.patch('/users/me', auth, async (req, res) => {
     const updates = Object.keys(req.body);
-    const allowedUpdates = ['firstName', 'lastName', 'email', 'password'];
+    const allowedUpdates = ['firstName', 'lastName', 'nickName', 'email', 'password'];
     const isValidOperation = updates.every((update) => allowedUpdates.includes(update));
 
     if (!isValidOperation) {
@@ -289,10 +289,18 @@ router.get('/users', auth, async (req, res) => {
 //Change user's profile picture
 router.post('/users/me/avatar', auth, upload, async (req, res) => {
     const path = req.file.path.replace(/\\/g, '/');
+
+    if(req.user.avatar && req.user.avatar !== 'assets/Universal-0/imgs/no-avatar-icon.jpg') {
+        fs.unlink(req.user.avatar, (err) => {
+            if (err) {
+                console.log(err);
+            }
+        });
+    }    
+
     req.user.avatar = path;
     await req.user.save();
-
-    res.send('Image uploaded successfully!');
+    res.send(`${process.env.BACKEND_URL}${req.user.avatar}`);
 }, (error, req, res, next) => {
     res.status(400).send({ error: error.message });
 });
@@ -338,17 +346,15 @@ router.get('/users/me/likedStuff', auth, async (req, res) => {
         const user = await User.findById(req.user._id)
             .populate({
                 path: 'likedStuff',
-                options: {
-                    limit: limit,
-                    skip: skip
-                },
                 populate: [
                     { path: 'owner' }
                 ]
             });
-        
+
+        const page = Math.floor(skip / limit);
+
         const likedStuffToJSON = {
-            stuff: user.likedStuff.map((stuff) => {
+            stuff: user.likedStuff.slice(page * 10, (page * 10) + 10).map((stuff) => {
                 return {
                     ...stuff.toJSON(),
                     isLiked: req.user.likedStuff.includes(stuff._id)
@@ -365,7 +371,6 @@ router.get('/users/me/likedStuff', auth, async (req, res) => {
 });
 
 router.get('/users/me/likedCollections', auth, async (req, res) => {
-
     const limit = req.query.limit ? parseInt(req.query.limit) : 10;
     const skip = req.query.skip ? parseInt(req.query.skip) : 0;
 
@@ -373,18 +378,16 @@ router.get('/users/me/likedCollections', auth, async (req, res) => {
         const user = await User.findById(req.user._id)
             .populate({
                 path: 'likedCollections',
-                options: {
-                    limit: limit,
-                    skip: skip
-                },
                 populate: [
                     { path: 'owner' },
                     { path: 'stuff'}
                 ]
             });
         
+        const page = Math.floor(skip / limit);
+        
         const likedCollectionsToJSON = {
-            collections: user.likedCollections.map((collection) => {
+            collections: user.likedCollections.slice(page * 10, (page * 10) + 10).map((collection) => {
                 return {
                     ...collection.toJSON(),
                     isLiked: req.user.likedCollections.includes(collection._id),

@@ -270,6 +270,14 @@ router.post("/stuff/:id/image", auth, upload, async (req, res) => {
       return res.status(404).send();
     }
 
+    if(stuff.image && stuff.image !== "assets/Universal-0/imgs/no-image-icon.png") {
+      fs.unlink(stuff.image, (err) => {
+        if (err) {
+          console.log(err);
+        }
+      });
+    }
+
     const path = req.file.path.replace(/\\/g, '/');
     stuff.image = path;
     await stuff.save();
