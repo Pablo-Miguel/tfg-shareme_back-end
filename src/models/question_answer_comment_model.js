@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const Answer = require('./answer_model');
 
 const questionAnswersCommentSchema = new mongoose.Schema({
     from: {
@@ -41,7 +42,13 @@ questionAnswersCommentSchema.methods.toJSON = function() {
     };
 
     return commentObject;
-}
+};
+
+questionAnswersCommentSchema.pre('remove', async function(next) {
+    const questionAnswersComment = this;
+    await Answer.deleteMany({ question: questionAnswersComment._id });
+    next();
+}); 
 
 const questionAnswersComment = mongoose.model('QuestionAnswersComment', questionAnswersCommentSchema);
 

@@ -102,7 +102,7 @@ stuffSchema.methods.toJSON = function () {
     stuffObject.likes = likes.length;
     
     return stuffObject;
-}
+};
 
 const Stuff = mongoose.model('Stuff', stuffSchema);
 

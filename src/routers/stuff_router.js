@@ -1,6 +1,12 @@
 const express = require("express");
 const auth = require("../middleware/auth");
+const fs = require('fs');
 const Stuff = require("../models/stuff_model");
+const User = require("../models/user_model");
+const Collection = require("../models/collection_model");
+const RatingComment = require('../models/rating_comment_model');
+const QuestionAnswersComment = require('../models/question_answer_comment_model');
+const Answer = require('../models/answer_model');
 const { upload } = require("../../controllers/upload");
 const router = new express.Router();
 
@@ -212,9 +218,7 @@ router.patch("/stuff/:id", auth, async (req, res) => {
     "has_offer",
     "offer_price",
     "image",
-    "shopping_link",
-    "views",
-    "likes"
+    "shopping_link"
   ];
   const isValidOperation = updates.every((update) =>
     allowedUpdates.includes(update)
@@ -238,22 +242,57 @@ router.patch("/stuff/:id", auth, async (req, res) => {
     await stuff.save();
     res.send(stuff);
   } catch (e) {
-    res.send(400).send(e);
+    res.status(400).send(e);
   }
 });
 
 router.delete("/stuff/:id", auth, async (req, res) => {
+  const stuffId = req.params.id;
   try {
-    const stuff = await Stuff.findOneAndDelete({
-      _id: req.params.id,
+    const stuff = await Stuff.findOne({
+      _id: stuffId,
       owner: req.user._id,
-    }).populate("owner");
+    }).populate("questionAnswersComments");
 
     if (!stuff) {
       res.status(404).send();
     }
 
-    res.send(stuff);
+    await Answer.deleteMany({
+      question: {
+        $in: stuff.questionAnswersComments.map((question) => question._id),
+      },
+    });
+
+    await QuestionAnswersComment.deleteMany({ stuff: stuff._id });
+
+    await RatingComment.deleteMany({ stuff: stuff._id });
+
+    const collections = await Collection.find({ stuff: stuff._id });
+    
+    for (const collection of collections) {
+      collection.stuff.pull(stuff._id);
+      if (collection.stuff.length === 0) {
+        await Collection.findByIdAndDelete(collection._id);
+        await User.updateMany({}, { $pull: { likedCollections: collection._id } });
+      } else {
+        await collection.save();
+      }
+    }
+
+    if(stuff.image && stuff.image !== "assets/Universal-0/imgs/no-image-icon.png") {
+      fs.unlink(stuff.image, (err) => {
+        if (err) {
+          console.log(err);
+        }
+      });
+    }
+
+    await User.updateMany({}, { $pull: { likedStuff: stuff._id } });
+
+    await Stuff.findByIdAndDelete(stuff._id);
+
+    res.send('Deleted!');
   } catch (e) {
     res.status(500).send();
   }
