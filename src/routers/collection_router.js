@@ -1,6 +1,7 @@
 const express = require("express");
 const auth = require("../middleware/auth");
 const Collection = require("../models/collection_model");
+const User = require("../models/user_model");
 const router = new express.Router();
 
 //Create a new collection
@@ -76,7 +77,7 @@ router.get("/collections", auth, async (req, res) => {
             })
             .sort(sort)
             .limit(req.query.limit ? parseInt(req.query.limit) : 10)
-            .skip(req.query.skip ? parseInt(req.query.skip) : 0);
+            .skip(req.query.skip && allCollections.length > req.query.skip ? parseInt(req.query.skip) : 0);
         
         const toJSONCollections = collections.map((collection) => {
             return {
@@ -104,11 +105,28 @@ router.get("/collections", auth, async (req, res) => {
 
 //Get a collection by id
 router.get("/collections/:id", auth, async (req, res) => {
+    const match = {};
+    const limit = req.query.limit ? parseInt(req.query.limit) : 10;
+    const skip = req.query.skip ? parseInt(req.query.skip) : 0;
+
+    if(req.query.text_searched && req.query.text_searched !== "") {
+        const regex = new RegExp(req.query.text_searched, "i");
+        match.$or = [
+            { title: { $regex: regex } },
+            { description: { $regex: regex } }
+        ];
+    }
+
+    if(req.query.category && req.query.category !== "") {
+        match.category = req.query.category;
+    }
+    
     try {
         const collection = await Collection.findById(req.params.id)
             .populate("owner")
             .populate({
                 path: "stuff",
+                match,
                 populate: { path: "owner" }
             });
 
@@ -116,16 +134,19 @@ router.get("/collections/:id", auth, async (req, res) => {
             return res.status(404).send();
         }
 
+        const page = Math.floor(skip / limit);
+
         const toJSONCollection = {
             ...collection.toJSON(),
             stuff: [
-                ...collection.stuff.map((stuff) => {
+                ...collection.stuff.slice(page * limit, (page * limit) + limit).map((stuff) => {
                     return {
                         ...stuff.toJSON(),
                         isLiked: stuff.owner._id.toString() !== req.user._id.toString() ? stuff.likes.includes(req.user._id) : true
                     };
                 })
             ],
+            totalStuff: collection.stuff.length,
             isLiked: collection.owner._id.toString() !== req.user._id.toString() ? collection.likes.includes(req.user._id) : true
         };
 
@@ -138,7 +159,7 @@ router.get("/collections/:id", auth, async (req, res) => {
 //Update a collection by id
 router.patch("/collections/:id", auth, async (req, res) => {
     const updates = Object.keys(req.body);
-    const allowedUpdates = ["title", "description"];
+    const allowedUpdates = ["title", "description", "stuff"];
     const isValidOperation = updates.every((update) => {
         return allowedUpdates.includes(update);
     });
@@ -198,6 +219,8 @@ router.delete("/collections/:id", auth, async (req, res) => {
         if (!collection) {
             return res.status(404).send();
         }
+
+        await User.updateMany({}, { $pull: { likedCollections: collection._id } });
 
         res.send(collection);
     } catch (e) {
