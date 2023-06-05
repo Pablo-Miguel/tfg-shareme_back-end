@@ -354,7 +354,7 @@ router.get('/users/me/likedStuff', auth, async (req, res) => {
         const page = Math.floor(skip / limit);
 
         const likedStuffToJSON = {
-            stuff: user.likedStuff.slice(page * 10, (page * 10) + 10).map((stuff) => {
+            stuff: user.likedStuff.slice(page * limit, (page * limit) + limit).map((stuff) => {
                 return {
                     ...stuff.toJSON(),
                     isLiked: req.user.likedStuff.includes(stuff._id)
