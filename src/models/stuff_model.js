@@ -48,6 +48,12 @@ const stuffSchema = new mongoose.Schema({
         required: true,
         trim: true,
         validate(value) {
+            if(!value.includes('http')) {
+                throw new Error('Shopping link must contain http or https');
+            }
+            if(!value.includes('https')) {
+                throw new Error('Shopping link must contain http or https');
+            }
             if (!validator.isURL(value)) {
                 throw new Error('Shopping link must be a valid URL');
             }

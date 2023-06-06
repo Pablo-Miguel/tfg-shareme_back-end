@@ -29,7 +29,7 @@ router.post('/users/login', async (req, res) => {
         
         res.send({ user, token });
     } catch (e) {
-        res.status(400).send();
+        res.status(400).send(e);
     }
 });
 
@@ -69,7 +69,7 @@ router.get('/users/me', auth, async (req, res) => {
 //Create a patch to update a user
 router.patch('/users/me', auth, async (req, res) => {
     const updates = Object.keys(req.body);
-    const allowedUpdates = ['firstName', 'lastName', 'nickName', 'email', 'password'];
+    const allowedUpdates = ['firstName', 'lastName', 'nickName', 'verified', 'email', 'password'];
     const isValidOperation = updates.every((update) => allowedUpdates.includes(update));
 
     if (!isValidOperation) {
