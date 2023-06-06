@@ -176,7 +176,9 @@ router.get('/users/:id/unfollow', auth, async (req, res) => {
 //Get all followers
 router.get('/users/:id/followers', auth, async (req, res) => {
     const _id = req.params.id;
-    
+    const limit = req.query.limit ? parseInt(req.query.limit) : 10;
+    const skip = req.query.skip ? parseInt(req.query.skip) : 0;
+
     try {
 
         const user = await User.findById(_id).populate('followers');
@@ -184,15 +186,17 @@ router.get('/users/:id/followers', auth, async (req, res) => {
         if (!user) {
             return res.status(404).send();
         }
+
+        const page = Math.floor(skip / limit);
         
-        const followers = user.followers.map((follower) => {
+        const followers = user.followers.reverse().slice(page * limit, (page * limit) + limit).map((follower) => {
             return {
                 ...follower.toJSON(),
                 isFollowing: !req.user._id.equals(follower._id) ? req.user.following.includes(follower._id) : true
             };
         });
 
-        res.send(followers);
+        res.send({ followers: followers, total: user.followers.length });
         
     } catch (e) {
         res.status(500).send();
@@ -202,6 +206,8 @@ router.get('/users/:id/followers', auth, async (req, res) => {
 //Get all following
 router.get('/users/:id/following', auth, async (req, res) => {
     const _id = req.params.id;
+    const limit = req.query.limit ? parseInt(req.query.limit) : 10;
+    const skip = req.query.skip ? parseInt(req.query.skip) : 0;
 
     try {
 
@@ -211,14 +217,16 @@ router.get('/users/:id/following', auth, async (req, res) => {
             return res.status(404).send();
         }
 
-        const following = user.following.map((followedUser) => {
+        const page = Math.floor(skip / limit);
+
+        const following = user.following.reverse().slice(page * limit, (page * limit) + limit).map((followedUser) => {
             return {
                 ...followedUser.toJSON(),
                 isFollowing: !req.user._id.equals(followedUser._id) ? req.user.following.includes(followedUser._id) : true
             };
         });
 
-        res.send(following);
+        res.send({ following: following, total: user.following.length });
 
     } catch (e) {
         res.status(500).send();

@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const validator = require('validator');
 
 const stuffSchema = new mongoose.Schema({
     title: {
@@ -45,7 +46,12 @@ const stuffSchema = new mongoose.Schema({
     shopping_link: {
         type: String,
         required: true,
-        trim: true
+        trim: true,
+        validate(value) {
+            if (!validator.isURL(value)) {
+                throw new Error('Shopping link must be a valid URL');
+            }
+        }
     },
     views: {
         type: Number,
