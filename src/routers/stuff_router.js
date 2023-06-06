@@ -157,7 +157,7 @@ router.get("/stuff/:id/like", auth, async (req, res) => {
     
     res.send(stuff);
   } catch (e) {
-    res.send(400).send(e);
+    res.status(400).send(e);
   }
 });
 
@@ -185,7 +185,7 @@ router.get("/stuff/:id/unlike", auth, async (req, res) => {
 
     res.send(stuff);
   } catch (e) {
-    res.send(400).send(e);
+    res.status(400).send(e);
   }
 });
 
