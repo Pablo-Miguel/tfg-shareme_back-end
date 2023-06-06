@@ -204,7 +204,7 @@ router.get("/stuff/:id/view", auth, async (req, res) => {
 
     res.send(stuff);
   } catch (e) {
-    res.send(400).send(e);
+    res.status(400).send(e);
   }
 });
 
