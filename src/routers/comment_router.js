@@ -5,7 +5,6 @@ const QuestionAnswersComment = require("../models/question_answer_comment_model"
 const Answer = require("../models/answer_model");
 const router = new express.Router();
 
-//Create a new rating comment
 router.post("/ratingComments/:stuff_id", auth, async (req, res) => {
     const ratingComment = new RatingComment({
         ...req.body,
@@ -24,7 +23,6 @@ router.post("/ratingComments/:stuff_id", auth, async (req, res) => {
     }
 });
 
-//Create a new question answer comment
 router.post("/questionAnswersComments/:stuff_id/question", auth, async (req, res) => {
     const questionAnswerComment = new QuestionAnswersComment({
         ...req.body,
@@ -43,7 +41,6 @@ router.post("/questionAnswersComments/:stuff_id/question", auth, async (req, res
     }
 });
 
-//Create a new answer
 router.post("/questionAnswersComments/:question_id/answer", auth, async (req, res) => {
     const answer = new Answer({
         ...req.body,

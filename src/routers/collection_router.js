@@ -4,7 +4,6 @@ const Collection = require("../models/collection_model");
 const User = require("../models/user_model");
 const router = new express.Router();
 
-//Create a new collection
 router.post("/collections", auth, async (req, res) => {
     const collection = new Collection({
         ...req.body,
@@ -38,7 +37,6 @@ router.post("/collections", auth, async (req, res) => {
     }
 });
 
-//Get all collections
 router.get("/collections", auth, async (req, res) => {
     const match = {};
     const sort = {};
@@ -103,7 +101,6 @@ router.get("/collections", auth, async (req, res) => {
     }
 });
 
-//Get a collection by id
 router.get("/collections/:id", auth, async (req, res) => {
     const match = {};
     const limit = req.query.limit ? parseInt(req.query.limit) : 10;
@@ -156,7 +153,6 @@ router.get("/collections/:id", auth, async (req, res) => {
     }
 });
 
-//Update a collection by id
 router.patch("/collections/:id", auth, async (req, res) => {
     const updates = Object.keys(req.body);
     const allowedUpdates = ["title", "description", "stuff"];
@@ -208,7 +204,6 @@ router.patch("/collections/:id", auth, async (req, res) => {
     }
 });
 
-//Delete a collection by id
 router.delete("/collections/:id", auth, async (req, res) => {
     try {
         const collection = await Collection.findOneAndDelete({
@@ -222,126 +217,125 @@ router.delete("/collections/:id", auth, async (req, res) => {
 
         await User.updateMany({}, { $pull: { likedCollections: collection._id } });
 
-        res.send(collection);
+        res.send('Deleted!');
     } catch (e) {
         res.status(500).send();
     }
 });
 
 //Add stuff to a collection
-router.post("/collections/:id/stuff", auth, async (req, res) => {
-    try {
-        const collection = await Collection.findOne({
-            _id: req.params.id,
-            owner: req.user._id
-        });
+// router.post("/collections/:id/stuff", auth, async (req, res) => {
+//     try {
+//         const collection = await Collection.findOne({
+//             _id: req.params.id,
+//             owner: req.user._id
+//         });
 
-        if (!collection) {
-            return res.status(404).send();
-        }
+//         if (!collection) {
+//             return res.status(404).send();
+//         }
 
-        const stuff = req.body.stuff;
+//         const stuff = req.body.stuff;
 
-        if (Array.isArray(stuff)) {
-            let error = null;
+//         if (Array.isArray(stuff)) {
+//             let error = null;
 
-            stuff.forEach((stuff) => {
-                if (collection.stuff.includes(stuff)) {
-                    error = { error: "Some of the Stuff already in collection!" };
-                }
-            });
+//             stuff.forEach((stuff) => {
+//                 if (collection.stuff.includes(stuff)) {
+//                     error = { error: "Some of the Stuff already in collection!" };
+//                 }
+//             });
 
-            if (error) {
-                return res.status(400).send(error);
-            }
+//             if (error) {
+//                 return res.status(400).send(error);
+//             }
 
-        } else {
+//         } else {
 
-            if (collection.stuff.includes(stuff)) {
-                return res.status(400).send({ error: "Stuff already in collection!" });
-            }
-        }        
+//             if (collection.stuff.includes(stuff)) {
+//                 return res.status(400).send({ error: "Stuff already in collection!" });
+//             }
+//         }        
 
-        collection.stuff = collection.stuff.concat(stuff);
-        await collection.save();
+//         collection.stuff = collection.stuff.concat(stuff);
+//         await collection.save();
 
-        const newCollection = await Collection.findById(collection._id)
-            .populate("owner")
-            .populate({
-                path: "stuff",
-                populate: { path: "owner" }
-            });
+//         const newCollection = await Collection.findById(collection._id)
+//             .populate("owner")
+//             .populate({
+//                 path: "stuff",
+//                 populate: { path: "owner" }
+//             });
 
-        const toJSONCollection = {
-            ...newCollection.toJSON(),
-            stuff: [
-                ...newCollection.stuff.map((stuff) => {
-                    return {
-                        ...stuff.toJSON()
-                    };
-                })
-            ]
-        };
+//         const toJSONCollection = {
+//             ...newCollection.toJSON(),
+//             stuff: [
+//                 ...newCollection.stuff.map((stuff) => {
+//                     return {
+//                         ...stuff.toJSON()
+//                     };
+//                 })
+//             ]
+//         };
 
-        res.send(toJSONCollection);
-    } catch (e) {
-        res.status(400).send(e);
-    }
-});
+//         res.send(toJSONCollection);
+//     } catch (e) {
+//         res.status(400).send(e);
+//     }
+// });
 
 //Remove stuff from a collection
-router.delete("/collections/:id/stuff", auth, async (req, res) => {
-    try {
-        const collection = await Collection.findOne({
-            _id: req.params.id,
-            owner: req.user._id
-        });
+// router.delete("/collections/:id/stuff", auth, async (req, res) => {
+//     try {
+//         const collection = await Collection.findOne({
+//             _id: req.params.id,
+//             owner: req.user._id
+//         });
 
-        if (!collection) {
-            return res.status(404).send();
-        }
+//         if (!collection) {
+//             return res.status(404).send();
+//         }
 
-        const stuff = req.body.stuff;
+//         const stuff = req.body.stuff;
 
-        if(Array.isArray(stuff)) {
-            return res.status(400).send({ error: "Can't remove multiple stuff at once!" });
-        }
+//         if(Array.isArray(stuff)) {
+//             return res.status(400).send({ error: "Can't remove multiple stuff at once!" });
+//         }
 
-        if (!collection.stuff.includes(stuff)) {
-            return res.status(400).send({ error: "Stuff not in collection!" });
-        }
+//         if (!collection.stuff.includes(stuff)) {
+//             return res.status(400).send({ error: "Stuff not in collection!" });
+//         }
 
-        collection.stuff = collection.stuff.filter((stuffId) => {
-            return stuffId.toString() !== stuff.toString();
-        });
+//         collection.stuff = collection.stuff.filter((stuffId) => {
+//             return stuffId.toString() !== stuff.toString();
+//         });
 
-        await collection.save();
+//         await collection.save();
 
-        const newCollection = await Collection.findById(collection._id)
-            .populate("owner")
-            .populate({
-                path: "stuff",
-                populate: { path: "owner" }
-            });
+//         const newCollection = await Collection.findById(collection._id)
+//             .populate("owner")
+//             .populate({
+//                 path: "stuff",
+//                 populate: { path: "owner" }
+//             });
 
-        const toJSONCollection = {
-            ...newCollection.toJSON(),
-            stuff: [
-                ...newCollection.stuff.map((stuff) => {
-                    return {
-                        ...stuff.toJSON()
-                    };
-                })
-            ]
-        };
+//         const toJSONCollection = {
+//             ...newCollection.toJSON(),
+//             stuff: [
+//                 ...newCollection.stuff.map((stuff) => {
+//                     return {
+//                         ...stuff.toJSON()
+//                     };
+//                 })
+//             ]
+//         };
         
-        res.send(toJSONCollection);
-    } catch (e) {
-        res.status(400).send(e);
-    }
-});
+//         res.send(toJSONCollection);
+//     } catch (e) {
+//         res.status(400).send(e);
+//     }
+// });
 
-//Add a view to a collection
 router.post("/collections/:id/view", async (req, res) => {
     try {
         const collection = await Collection.findById(req.params.id);
@@ -359,7 +353,6 @@ router.post("/collections/:id/view", async (req, res) => {
     }
 });
 
-//Add a like to a collection
 router.post("/collections/:id/like", auth, async (req, res) => {
     try {
         const collection = await Collection.findById(req.params.id);
@@ -384,7 +377,6 @@ router.post("/collections/:id/like", auth, async (req, res) => {
     }
 });
 
-//Remove a like from a collection
 router.delete("/collections/:id/unlike", auth, async (req, res) => {
     try {
         const collection = await Collection.findById(req.params.id);

@@ -217,7 +217,6 @@ router.patch("/stuff/:id", auth, async (req, res) => {
     "price",
     "has_offer",
     "offer_price",
-    "image",
     "shopping_link"
   ];
   const isValidOperation = updates.every((update) =>

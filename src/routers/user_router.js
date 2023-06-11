@@ -7,7 +7,6 @@ const mime = require('mime-types');
 const { upload } = require('../../controllers/upload');
 const router = new express.Router();
 
-//Create a post to signup a new user
 router.post('/users/signup', async (req, res) => {
     const user = new User(req.body);
     
@@ -21,7 +20,6 @@ router.post('/users/signup', async (req, res) => {
     }
 });
 
-//Create a post to login a user
 router.post('/users/login', async (req, res) => {
     try {
         const user = await User.findByCredentials(req.body.email, req.body.password);
@@ -33,7 +31,6 @@ router.post('/users/login', async (req, res) => {
     }
 });
 
-//Create a get to logout a user
 router.get('/users/logout', auth, async (req, res) => {
     try {
         req.user.tokens = req.user.tokens.filter((token) => {
@@ -48,7 +45,6 @@ router.get('/users/logout', auth, async (req, res) => {
     }
 });
 
-//Create a get to logout a user from all devices
 router.get('/users/logoutAll', auth, async (req, res) => {
     try {
         req.user.tokens = [];
@@ -61,12 +57,10 @@ router.get('/users/logoutAll', auth, async (req, res) => {
     }
 });
 
-//Who am I?
 router.get('/users/me', auth, async (req, res) => {
     res.send(req.user);
 });
 
-//Create a patch to update a user
 router.patch('/users/me', auth, async (req, res) => {
     const updates = Object.keys(req.body);
     const allowedUpdates = ['firstName', 'lastName', 'nickName', 'verified', 'email', 'password'];
@@ -86,18 +80,16 @@ router.patch('/users/me', auth, async (req, res) => {
     }
 });
 
-//Create a delete to remove a user
-router.delete('/users/me', auth, async (req, res) => {
-    try {
-        await User.findByIdAndDelete(req.user._id);
+// router.delete('/users/me', auth, async (req, res) => {
+//     try {
+//         await User.findByIdAndDelete(req.user._id);
         
-        res.send(req.user);
-    } catch (e) {
-        res.status(500).send();
-    }
-});
+//         res.send(req.user);
+//     } catch (e) {
+//         res.status(500).send();
+//     }
+// });
 
-//Search for a user
 router.get('/users/:id', auth, async (req, res) => {
     const _id = req.params.id;
 
@@ -118,7 +110,6 @@ router.get('/users/:id', auth, async (req, res) => {
     }
 });
 
-//Follow a user
 router.get('/users/:id/follow', auth, async (req, res) => {
     const _id = req.params.id;
 
@@ -143,7 +134,6 @@ router.get('/users/:id/follow', auth, async (req, res) => {
     }
 });
 
-//Unfollow a user
 router.get('/users/:id/unfollow', auth, async (req, res) => {
     const _id = req.params.id;
 
@@ -173,7 +163,6 @@ router.get('/users/:id/unfollow', auth, async (req, res) => {
     }
 });
 
-//Get all followers
 router.get('/users/:id/followers', auth, async (req, res) => {
     const _id = req.params.id;
     const limit = req.query.limit ? parseInt(req.query.limit) : 10;
@@ -203,7 +192,6 @@ router.get('/users/:id/followers', auth, async (req, res) => {
     }
 });
 
-//Get all following
 router.get('/users/:id/following', auth, async (req, res) => {
     const _id = req.params.id;
     const limit = req.query.limit ? parseInt(req.query.limit) : 10;
@@ -233,7 +221,6 @@ router.get('/users/:id/following', auth, async (req, res) => {
     }
 });
 
-// Get users
 router.get('/users', auth, async (req, res) => {
     const match = {};
     const sort = {};
@@ -294,7 +281,6 @@ router.get('/users', auth, async (req, res) => {
 
 });
 
-//Change user's profile picture
 router.post('/users/me/avatar', auth, upload, async (req, res) => {
     const path = req.file.path.replace(/\\/g, '/');
 
@@ -313,7 +299,6 @@ router.post('/users/me/avatar', auth, upload, async (req, res) => {
     res.status(400).send({ error: error.message });
 });
 
-// Get user's imgs
 router.get('/assets/:nickName-:id/imgs/:imageName', async (req, res) => {
     const _id = req.params.id;
     const nickName = req.params.nickName;
