@@ -13,7 +13,7 @@ const answerSchema = new mongoose.Schema({
     },
     question: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'QuestionAnswersMessage',
+        ref: 'QuestionAnswersComment',
         required: true
     }
 }, {
